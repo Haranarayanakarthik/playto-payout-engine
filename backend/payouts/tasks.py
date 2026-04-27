@@ -3,8 +3,7 @@ from celery import shared_task
 from django.db import transaction
 from .models import *
 
-@shared_task
-def process_payout(payout_id):
+def process_payout(id):
     payout = Payout.objects.get(id=payout_id)
 
     if payout.status != "pending":
