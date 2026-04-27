@@ -8,7 +8,15 @@ from .tasks import process_payout
 
 # ✅ Ensure merchant always exists
 def get_merchant():
-    merchant, _ = Merchant.objects.get_or_create(name="Default Merchant")
+    merchant, created = Merchant.objects.get_or_create(name="Default Merchant")
+
+    if created:
+        LedgerEntry.objects.create(
+            merchant=merchant,
+            amount_paise=100000,  # ₹1000
+            entry_type="credit"
+        )
+
     return merchant
 
 
