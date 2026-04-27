@@ -23,7 +23,7 @@ def get_balance(merchant):
 # ✅ Dashboard API
 @api_view(["GET"])
 def dashboard(request):
-    merchant = Merchant.objects.first()
+   m, _ = Merchant.objects.get_or_create(name="Default Merchant")
 
     if not merchant:
         return Response({"error": "No merchant found"}, status=400)
