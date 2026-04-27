@@ -105,6 +105,7 @@ from payouts.models import Merchant, LedgerEntry
 
 m = Merchant.objects.create(name="Test Merchant")
 LedgerEntry.objects.create(merchant=m, amount_paise=10000, entry_type="credit")
+```
 6. Start backend
 python manage.py runserver
 7. Start Redis
