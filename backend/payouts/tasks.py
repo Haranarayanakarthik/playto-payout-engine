@@ -1,11 +1,12 @@
 import random
-from celery import shared_task
 from django.db import transaction
-from .models import *
+from .models import Payout, LedgerEntry
 
-def process_payout(id):
+
+def process_payout(payout_id):
     payout = Payout.objects.get(id=payout_id)
 
+    # Ignore if already processed
     if payout.status != "pending":
         return
 
@@ -25,6 +26,7 @@ def process_payout(id):
         else:
             payout.status = "failed"
 
+            # Refund money
             LedgerEntry.objects.create(
                 merchant=payout.merchant,
                 amount_paise=payout.amount_paise,
