@@ -1,16 +1,26 @@
-SECRET_KEY = "test"
-DEBUG = True
+import os
+import dj_database_url
+from corsheaders.defaults import default_headers
+
+# ================================
+# BASIC SETTINGS
+# ================================
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
+
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
 
-# ✅ Installed apps
+# ================================
+# INSTALLED APPS
+# ================================
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.auth',
-    'django.contrib.sessions',          # REQUIRED
-    'django.contrib.messages',          # REQUIRED
-    'django.contrib.staticfiles',       # REQUIRED
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 
     'rest_framework',
     'corsheaders',
@@ -18,9 +28,11 @@ INSTALLED_APPS = [
 ]
 
 
-# ✅ Middleware (ORDER MATTERS)
+# ================================
+# MIDDLEWARE (ORDER IMPORTANT)
+# ================================
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",   # must be first
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -30,20 +42,32 @@ MIDDLEWARE = [
 ]
 
 
-# ✅ Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'playto',
-        'USER': 'postgres',
-        'PASSWORD': 'Karthik1563',
-        'HOST': 'localhost',
-        'PORT': '5432',
+# ================================
+# DATABASE (LOCAL + RENDER)
+# ================================
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL)
     }
-}
+else:
+    # Local fallback
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'playto',
+            'USER': 'postgres',
+            'PASSWORD': 'Karthik1563',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 
-# ✅ Templates
+# ================================
+# TEMPLATES
+# ================================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -60,30 +84,43 @@ TEMPLATES = [
 ]
 
 
-# ✅ URLs
+# ================================
+# URL CONFIG
+# ================================
 ROOT_URLCONF = 'config.urls'
 
 
-# ✅ Static files (needed for DRF UI)
+# ================================
+# STATIC FILES
+# ================================
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')
 
 
-# ✅ Default primary key fix (removes warnings)
+# ================================
+# DEFAULT FIELD
+# ================================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# ✅ CORS (for React frontend)
+# ================================
+# CORS (FRONTEND CONNECTION)
+# ================================
 CORS_ALLOW_ALL_ORIGINS = True
-
-from corsheaders.defaults import default_headers
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "idempotency-key",
 ]
 
 
-# ✅ Celery (Redis)
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+# ================================
+# CELERY (LOCAL + RENDER)
+# ================================
+CELERY_BROKER_URL = os.environ.get(
+    "CELERY_BROKER_URL",
+    "redis://127.0.0.1:6379/0"
+)
+
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = None
