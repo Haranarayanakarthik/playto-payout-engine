@@ -6,6 +6,12 @@ from .models import Merchant, LedgerEntry, Payout
 from .tasks import process_payout
 
 
+# ✅ Ensure merchant always exists
+def get_merchant():
+    merchant, _ = Merchant.objects.get_or_create(name="Default Merchant")
+    return merchant
+
+
 # ✅ Ledger-based balance (DB-level, no Python math)
 def get_balance(merchant):
     result = LedgerEntry.objects.filter(merchant=merchant).aggregate(
@@ -23,20 +29,18 @@ def get_balance(merchant):
 # ✅ Dashboard API
 @api_view(["GET"])
 def dashboard(request):
-    m, _ = Merchant.objects.get_or_create(name="Default Merchant")
+    merchant = get_merchant()
 
     return Response({
-        "balance": get_balance(m),
+        "balance": get_balance(merchant),
         "payouts": list(Payout.objects.values())
     })
 
-# ✅ Create payout (core logic)
+
+# ✅ Create payout
 @api_view(["POST"])
 def create_payout(request):
-    merchant = Merchant.objects.first()
-
-    if not merchant:
-        return Response({"error": "No merchant found"}, status=400)
+    merchant = get_merchant()   # 🔥 FIXED HERE
 
     # 🔴 Idempotency key
     key = request.headers.get("Idempotency-Key")
@@ -66,16 +70,13 @@ def create_payout(request):
 
     # 🔐 Concurrency-safe transaction
     with transaction.atomic():
-        # Lock merchant ledger rows
         LedgerEntry.objects.select_for_update().filter(merchant=merchant)
 
-        # Recompute balance inside lock
         balance = get_balance(merchant)
 
         if balance < amount:
             return Response({"error": "Insufficient balance"}, status=400)
 
-        # Create payout
         payout = Payout.objects.create(
             merchant=merchant,
             amount_paise=amount,
@@ -83,7 +84,7 @@ def create_payout(request):
             status="pending"
         )
 
-        # Hold funds (debit entry)
+        # Hold funds
         LedgerEntry.objects.create(
             merchant=merchant,
             amount_paise=amount,
