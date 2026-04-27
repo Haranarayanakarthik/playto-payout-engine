@@ -101,7 +101,7 @@ def create_payout(request):
         )
 
     # 🚀 Async processing
-    process_payout.delay(payout.id)
+    process_payout(payout.id)
 
     return Response({
         "id": payout.id,
