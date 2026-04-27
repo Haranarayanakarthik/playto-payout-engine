@@ -1,15 +1,20 @@
-# Playto Payout Engine
+# 🚀 Playto Payout Engine
 
-A full-stack payout system built using **Django + PostgreSQL + Celery + Redis + React**.
+A production-style **full-stack fintech payout system** built with:
 
-This project simulates a real-world fintech payout engine with:
-- Ledger-based accounting
-- Idempotent APIs
-- Concurrency-safe transactions
-- Asynchronous payout processing
-- Live frontend dashboard
+- Django + PostgreSQL (backend)
+- Celery + Redis (async processing)
+- React (frontend)
 
 ---
+
+## 🔥 Highlights
+
+- Idempotent payout APIs (safe retries)
+- Concurrency-safe ledger system (no double spending)
+- Async payout execution using Celery
+- Real-time UI updates
+- Failure-safe refund handling
 
 ## 🚀 Tech Stack
 
